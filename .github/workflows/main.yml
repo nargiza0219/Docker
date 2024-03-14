@@ -1,43 +1,88 @@
-name: Docker Image CI
+name: Docker to ECR
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  # Credentials for deployment to AWS
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_REGION: us-west-2
+    branches:
+    - main
 
 jobs:
-
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
-
-  push_to_ecr:
-    needs: build
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
-    
-    - name: Log in to Amazon ECR
-      id: login-ecr
-      run: echo $(aws ecr get-login-password --region ${{ env.AWS_REGION }}) | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-    - name: Push image to Amazon ECR
-      run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-image-name:$(date +%s)
+        aws-region: us-west-2
 
-  
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build Docker image
+      run: docker build -t my-image:latest .
+
+    - name: Tag Docker image
+      run: docker tag my-image:latest 864709224729.dkr.ecr.us-west-2.amazonaws.com/bar:latest
+
+    - name: Push Docker image to Amazon ECR
+      run: |
+        docker push 864709224729.dkr.ecr.us-west-2.amazonaws.com/bar:latest
+
+
+
+
+
+
+
+
+
+
+
+# name: Docker Image CI
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches: [ "main" ]
+#   pull_request:
+#     branches: [ "main" ]
+
+# env:
+#   # Credentials for deployment to AWS
+#   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#   AWS_REGION: us-west-2
+
+# jobs:
+
+#   build:
+
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - uses: actions/checkout@v3
+#     - name: Build the Docker image
+#       run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+#   push_to_ecr:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Configure AWS credentials
+#       uses: aws-actions/configure-aws-credentials@v2
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: us-west-2
+
+#     - name: Log in to Amazon ECR
+#       id: login-ecr
+#       run: echo $(aws ecr get-login-password --region ${{ env.AWS_REGION }}) | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+#     - name: Push image to Amazon ECR
+#       run: docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-image-name:$(date +%s)
+
+
