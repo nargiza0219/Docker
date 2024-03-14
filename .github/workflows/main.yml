@@ -33,21 +33,14 @@ jobs:
         run: |
           docker push 864709224729.dkr.ecr.us-west-2.amazonaws.com/bar:latest
 
-      - name: Send Slack Notification
-        uses: rtCamp/action-slack-notify@v3
-        env:
-            SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }} 
-            with:
-            channel: general
-            text: |
-              Docker image has been pushed to Amazon ECR successfully.
-
-          # - name: Send Slack notification on failure
-          # if: failure()
-          # uses: rtCamp/action-slack-notify@v2
-          # with:
-          #   status: 'Failure'
-          #   text: 'Failed to push Docker image to Amazon ECR.'
+      
+      - name: Send Slack notification on failure
+        if: failure()
+        uses: slack/webhook-action@v2
+        with:
+            url: ${{ secrets.SLACK_WEBHOOK_URL }}
+            method: post
+            payload: '{"text": "Failed to push Docker image to Amazon ECR."}'
 
 
 
