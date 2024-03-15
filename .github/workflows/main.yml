@@ -38,9 +38,9 @@ jobs:
         if: failure()
         uses: slackapi/slack-github-action@v1.25.0
         with:
-            url: ${{ secrets.SLACK_WEBHOOK_URL }}
-            method: post
-            payload: '{"text": "Failed to push Docker image to Amazon ECR."}'
+          channel-id: 'C06P83UH0DV' # ID of Slack Channel you want to post to
+          slack-message: 'posting from a github action!' # The message you want to post
+          payload: '{"text": "Failed to push Docker image to Amazon ECR."}'
 
 
 
