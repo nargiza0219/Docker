@@ -31,7 +31,7 @@ jobs:
 
       - name: Push Docker image to Amazon ECR
         run: |
-          docker push 864709224729.dkr.ecr.us-west-2.amazonaws.com/bar:latest
+          docker push 1864709224729.dkr.ecr.us-west-2.amazonaws.com/bar:latest
 
       
       - name: Send Slack notification on failure
